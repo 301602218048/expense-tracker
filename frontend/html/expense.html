@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="../css/expense.css" />
+  </head>
+  <body>
+    <nav>
+      <h2>Expense Tracker</h2>
+      <div>
+        <label for="premiumBtn"><strong>Premium Membership:</strong></label>
+        <button id="premiumBtn">
+          <b>Buy Now</b>
+        </button>
+      </div>
+    </nav>
+
+    <form onsubmit="handleForm(event)">
+      <label for="amount">Choose Expense Amount</label>
+      <input type="number" name="amount" id="amount" min="0" required />
+      <label for="desc">Choose Description</label>
+      <input type="text" name="desc" id="desc" required />
+      <label for="category">Category</label>
+      <select name="category" id="category" required>
+        <option value="party">Party</option>
+        <option value="school">School</option>
+        <option value="trip">Trip</option>
+        <option value="shopping">Shopping</option>
+        <option value="salary">Salary</option>
+        <option value="other">Others</option>
+      </select>
+      <label for="note">Note</label>
+      <input type="text" name="note" id="note" placeholder="Optional" />
+      <button type="submit">Submit</button>
+    </form>
+
+    <h2 id="expenses">Expenses</h2>
+    <div id="page-selection">
+      <label for="pages">Choose a row per page:</label>
+      <select name="pages" id="pages">
+        <option value="2">2</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+      </select>
+    </div>
+    <ul id="expense-list"></ul>
+    <div id="pagination" style="position: sticky"></div>
+
+    <h2 id="lb-heading" style="display: none">Current Leaderboard</h2>
+    <ul id="lb-list" style="display: none"></ul>
+    <ul id="leaderboard-tabledata" style="display: none"></ul>
+
+    <script src="../javascript/expense.js"></script>
+  </body>
+</html>
