@@ -7,7 +7,7 @@ const PremiumRoutes = require("./routes/premiumRoutes");
 const passwordRoutes = require("./routes/passwordRoutes");
 const path = require("path");
 const fs = require("fs");
-const morgan = require("morgan");
+// const morgan = require("morgan");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -18,13 +18,13 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, "access.log"),
-  { flags: "a" }
-);
+// const accessLogStream = fs.createWriteStream(
+//   path.join(__dirname, "access.log"),
+//   { flags: "a" }
+// );
 
 app.use(cors());
-app.use(morgan("combined", { stream: accessLogStream }));
+// app.use(morgan("combined", { stream: accessLogStream }));
 app.use(express.json());
 app.use("/user", userRoutes);
 app.use("/premium", PremiumRoutes);
