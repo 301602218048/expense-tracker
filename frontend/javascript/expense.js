@@ -1,4 +1,4 @@
-const api = "http://localhost:3000";
+const api = "http://13.233.105.137:3000";
 const cashfree = Cashfree({ mode: "sandbox" });
 const premiumBtn = document.getElementById("premiumBtn");
 const pagination = document.getElementById("pagination");
@@ -115,7 +115,7 @@ function showPremiumFeatures() {
 
 async function download() {
   try {
-    const res = await axios.get("http://localhost:3000/expenses/download", {
+    const res = await axios.get(`${api}/expenses/download`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -193,7 +193,7 @@ async function deleteData(id, item) {
 
 async function leaderboardTableData() {
   const listboard = document.getElementById("leaderboard-tabledata");
-  const response = await axios.get("http://localhost:3000/expenses", {
+  const response = await axios.get(`${api}/expenses`, {
     headers: {
       "Content-type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -242,12 +242,9 @@ async function leaderboardTableData() {
 
   const saving = income - expense;
 
-  const downloadtable = await axios.get(
-    "http://localhost:3000/expenses/downloadtable",
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+  const downloadtable = await axios.get(`${api}/expenses/downloadtable`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   console.log(downloadtable);
 

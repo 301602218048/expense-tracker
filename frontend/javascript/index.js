@@ -1,4 +1,4 @@
-const api = "http://localhost:3000/user";
+const api = "http://13.233.105.137:3000/user";
 const msg = document.getElementById("message");
 
 function handleSignUp(e) {
@@ -31,7 +31,7 @@ async function userLogin(obj) {
     if (user.data.success) {
       alert(`${user.data.msg}`);
       localStorage.setItem("token", user.data.token);
-      window.location.href = `${window.location.origin}/12Expense_tracker_full/frontend/html/expense.html`;
+      window.location.href = `${window.location.origin}/frontend/html/expense.html`;
     }
   } catch (error) {
     console.log(error);
@@ -44,7 +44,7 @@ async function addData(obj) {
     const user = await axios.post(api + "/signup", obj);
     if (user) {
       alert(`${user.data.msg}`);
-      window.location.href = `${window.location.origin}/12Expense_tracker_full/frontend/html/login.html`;
+      window.location.href = `${window.location.origin}/frontend/html/login.html`;
     }
   } catch (error) {
     console.log(error);
