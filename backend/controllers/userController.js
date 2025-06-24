@@ -14,15 +14,13 @@ const addUser = async (req, res) => {
         .json({ msg: "Email already exists", success: false });
     }
     const saltRounds = 10;
-    bcrypt.hash(password, saltRounds, async (err, hash) => {
-      console.log(err);
-      await Users.create({
-        name: name,
-        email: email,
-        password: hash,
-      });
-      res.status(201).json({ msg: "signed up successfully", success: true });
+    const hashpass = bcrypt.hash(password, saltRounds);
+    await Users.create({
+      name: name,
+      email: email,
+      password: hashpass,
     });
+    res.status(201).json({ msg: "signed up successfully", success: true });
   } catch (error) {
     res.status(500).json({ msg: error.message, success: false });
   }

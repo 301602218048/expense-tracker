@@ -1,4 +1,4 @@
-const api = "http://13.127.163.83:3000/user";
+const api = "http://15.207.115.51:3000/user";
 const msg = document.getElementById("message");
 
 function handleSignUp(e) {

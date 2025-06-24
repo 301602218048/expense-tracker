@@ -11,9 +11,9 @@ const sendResetLink = async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const { email } = req.body;
-    const user = await User.findOne({ where: { email } }, { transaction: t });
+    const user = await User.findOne({ where: { email }, transaction: t });
     if (!user) {
-      t.rollback();
+      await t.rollback();
       return res.status(404).json({ msg: "Email not found", success: false });
     }
     const id = uuidv4();
@@ -28,7 +28,7 @@ const sendResetLink = async (req, res) => {
     );
 
     sgMail.setApiKey(process.env.SENDGRID_KEY);
-    const link = `http://localhost:3000/password/resetpassword/${id}`;
+    const link = `http://15.207.115.51:3000/password/resetpassword/${id}`;
 
     const msg = {
       to: email,
@@ -38,10 +38,10 @@ const sendResetLink = async (req, res) => {
       html: `<strong>Click on the below link to reset your password.</strong><a href="${link}">${link}</a>`,
     };
     await sgMail.send(msg);
-    t.commit();
+    await t.commit();
     res.status(200).json({ msg: "Email with reset link sent", success: true });
   } catch (error) {
-    t.rollback();
+    await t.rollback();
     console.error(error);
     res.status(500).json({ msg: error.message, success: false });
   }
@@ -84,6 +84,9 @@ const updatePass = async (req, res) => {
         .json({ msg: "Invalid or expired link", success: false });
     }
 
+    forgotpassrequest.isActive = false;
+    await forgotpassrequest.save({ transaction: t });
+
     const user = await User.findByPk(forgotpassrequest.userId, {
       transaction: t,
     });
@@ -96,9 +99,6 @@ const updatePass = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save({ transaction: t });
-
-    forgotpassrequest.isActive = false;
-    await forgotpassrequest.save({ transaction: t });
 
     await t.commit();
     res

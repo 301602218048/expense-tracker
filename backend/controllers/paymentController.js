@@ -5,18 +5,22 @@ const Orders = require("../models/order");
 const User = require("../models/user");
 
 const initiatePayment = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const userId = req.user.id;
     const email = req.user.email;
     const orderId = uuidv4();
     const amount = 100.0;
 
-    await Orders.create({
-      orderId,
-      amount,
-      status: "PENDING",
-      userId,
-    });
+    await Orders.create(
+      {
+        orderId,
+        amount,
+        status: "PENDING",
+        userId,
+      },
+      { transaction: t }
+    );
 
     const paymentSessionId = await cashfreeService.createOrder(
       orderId,
@@ -25,10 +29,15 @@ const initiatePayment = async (req, res) => {
       userId,
       email
     );
-
+    if (!paymentSessionId) {
+      await t.rollback();
+      return res.status(500).json({ msg: "Failed to get Session Id" });
+    }
+    await t.commit();
     res.status(201).json({ paymentSessionId, orderId });
   } catch (error) {
     console.error("Payment initiation failed:", error.message);
+    await t.rollback();
     res.status(500).json({ error: "Failed to initiate payment" });
   }
 };
@@ -41,7 +50,7 @@ const getOrderStatus = async (req, res) => {
 
     const order = await Orders.findOne({ where: { orderId }, transaction: t });
     if (!order) {
-      t.rollback();
+      await t.rollback();
       return res.status(404).json({ msg: "Order not found" });
     }
     order.status = orderStatus;
@@ -53,7 +62,7 @@ const getOrderStatus = async (req, res) => {
         { where: { id: order.userId }, transaction: t }
       );
     }
-    t.commit();
+    await t.commit();
     res
       .status(200)
       .json({ msg: "This is your order status", order, orderStatus });

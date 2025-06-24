@@ -1,4 +1,4 @@
-const api = "http://13.127.163.83:3000";
+const api = "http://15.207.115.51:3000";
 const cashfree = Cashfree({ mode: "sandbox" });
 const premiumBtn = document.getElementById("premiumBtn");
 const pagination = document.getElementById("pagination");

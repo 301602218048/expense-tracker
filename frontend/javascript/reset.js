@@ -1,6 +1,6 @@
 const form = document.getElementById("resetForm");
 const messageDiv = document.getElementById("message");
-const api = "http://13.127.163.83:3000";
+const api = "http://15.207.115.51:3000";
 
 const parts = window.location.pathname.split("/");
 const id = parts[parts.length - 1];
