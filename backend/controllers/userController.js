@@ -14,7 +14,7 @@ const addUser = async (req, res) => {
         .json({ msg: "Email already exists", success: false });
     }
     const saltRounds = 10;
-    const hashpass = bcrypt.hash(password, saltRounds);
+    const hashpass = await bcrypt.hash(password, saltRounds);
     await Users.create({
       name: name,
       email: email,
