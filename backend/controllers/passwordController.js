@@ -28,7 +28,7 @@ const sendResetLink = async (req, res) => {
     );
 
     sgMail.setApiKey(process.env.SENDGRID_KEY);
-    const link = `http://15.207.115.51/password/resetpassword/${id}`;
+    const link = `http://15.207.115.51:3000/password/resetpassword/${id}`;
 
     const msg = {
       to: email,

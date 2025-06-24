@@ -1,4 +1,4 @@
-const api = "http://15.207.115.51/user";
+const api = "http://15.207.115.51:3000/user";
 const msg = document.getElementById("message");
 
 function handleSignUp(e) {
@@ -31,7 +31,7 @@ async function userLogin(obj) {
     if (user.data.success) {
       alert(`${user.data.msg}`);
       localStorage.setItem("token", user.data.token);
-      window.location.href = `${window.location.origin}/frontend/expense.html`;
+      window.location.href = `${window.location.origin}/expense.html`;
     }
   } catch (error) {
     console.log(error);
@@ -44,7 +44,7 @@ async function addData(obj) {
     const user = await axios.post(api + "/signup", obj);
     if (user) {
       alert(`${user.data.msg}`);
-      window.location.href = `${window.location.origin}/frontend/login.html`;
+      window.location.href = `${window.location.origin}/login.html`;
     }
   } catch (error) {
     console.log(error);

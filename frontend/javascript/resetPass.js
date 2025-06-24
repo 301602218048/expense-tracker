@@ -1,4 +1,4 @@
-const api = "http://15.207.115.51";
+const api = "http://15.207.115.51:3000";
 
 async function handleReset(e) {
   try {
