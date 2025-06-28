@@ -35,7 +35,7 @@ async function userLogin(obj) {
     }
   } catch (error) {
     console.log(error);
-    updateDOM(error.response);
+    updateDOM(error);
   }
 }
 
@@ -48,13 +48,13 @@ async function addData(obj) {
     }
   } catch (error) {
     console.log(error);
-    updateDOM(error.response);
+    updateDOM(error);
   }
 }
 
 function updateDOM(user) {
   const para = document.createElement("p");
-  para.textContent = `Error: ${user.data.msg}`;
+  para.textContent = `Error: ${user.message}`;
   para.style.color = "red";
   msg.appendChild(para);
 }
