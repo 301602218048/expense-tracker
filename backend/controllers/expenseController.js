@@ -1,6 +1,5 @@
 const Expense = require("../models/expense");
 const User = require("../models/user");
-const Downloadfile = require("../models/downloadfile");
 const sequelize = require("../utils/db-connection");
 const s3Service = require("../services/s3Service");
 
@@ -129,18 +128,22 @@ const deleteExpense = async (req, res) => {
 
 const fileDownload = async (req, res) => {
   try {
-    const expense = await req.user.getExpenses();
-    const StringifyExpense = JSON.stringify(expense);
-    const userId = req.user.id;
-    const filename = `Expense-${userId}-${new Date()}.txt`;
-    const fileUrl = await s3Service.UploadToS3(StringifyExpense, filename);
-    await req.user.createDownloadfile({
-      fileUrl: fileUrl,
-    });
-    res.status(201).json({
-      fileUrl: fileUrl,
-      success: true,
-    });
+    if (req.user.isPremiumUser) {
+      const expense = await req.user.getExpenses();
+      const StringifyExpense = JSON.stringify(expense);
+      const userId = req.user.id;
+      const filename = `Expense-${userId}-${new Date()}.txt`;
+      const fileUrl = await s3Service.UploadToS3(StringifyExpense, filename);
+      await req.user.createDownloadfile({
+        fileUrl: fileUrl,
+      });
+      res.status(201).json({
+        fileUrl: fileUrl,
+        success: true,
+      });
+    } else {
+      return res.status(401).json({ msg: "Unauthorised", success: false });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Internal server error" });
@@ -149,13 +152,17 @@ const fileDownload = async (req, res) => {
 
 const downloadTable = async (req, res) => {
   try {
-    const response = await req.user.getDownloadfiles();
-    return res.status(200).json({
-      success: true,
-      data: response,
-    });
+    if (req.user.isPremiumUser) {
+      const response = await req.user.getDownloadfiles();
+      return res.status(200).json({
+        success: true,
+        data: response,
+      });
+    } else {
+      return res.status(401).json({ msg: "Unauthorised", success: false });
+    }
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       msg: "Internal server error",
       success: false,
     });

@@ -2,16 +2,21 @@ const api = "http://15.207.115.51:3000";
 const cashfree = Cashfree({ mode: "sandbox" });
 const premiumBtn = document.getElementById("premiumBtn");
 const pagination = document.getElementById("pagination");
+const logout = document.getElementById("logout");
 const rowperPage = document.getElementById("pages");
 
 const token = localStorage.getItem("token");
 let currentPage;
 
+if (!localStorage.getItem("token")) {
+  window.location.href = `${window.location.origin}/12Expense_tracker_full/frontend/html/login.html`;
+} else {
+  document.addEventListener("DOMContentLoaded", initialize);
+}
+
 if (!localStorage.getItem("rowperPage")) {
   localStorage.setItem("rowperPage", 2);
 }
-
-document.addEventListener("DOMContentLoaded", initialize);
 
 premiumBtn.addEventListener("click", async () => {
   try {
@@ -70,6 +75,7 @@ rowperPage.onchange = () => {
 
 async function initialize() {
   try {
+    document.body.style.display = "block";
     rowperPage.value = localStorage.getItem("rowperPage");
     await getExpenses(1);
 
@@ -150,6 +156,11 @@ function addLeaderToDOM({ name, totalExpense = 0 }, ul) {
   ul.appendChild(li);
 }
 
+logout.addEventListener("click", () => {
+  localStorage.removeItem("token");
+  window.location.href = `${window.location.origin}/12Expense_tracker_full/frontend/html/login.html`;
+});
+
 function handleForm(e) {
   e.preventDefault();
   const { amount, category, desc, note } = e.target;
@@ -193,117 +204,140 @@ async function deleteData(id, item) {
 
 async function leaderboardTableData() {
   const listboard = document.getElementById("leaderboard-tabledata");
-  const response = await axios.get(`${api}/expenses`, {
-    headers: {
-      "Content-type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
 
-  const expenses = response.data.data;
-  const now = new Date();
-  const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
-  const currentYear = now.getFullYear();
-  const monthName = now.toLocaleString("default", { month: "long" });
+  try {
+    const response = await axios.get("http://localhost:3000/expenses", {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  const monthlyExpenses = expenses.filter((exp) => {
-    const [year, month] = exp.createdAt.slice(0, 10).split("-");
-    return month === currentMonth && +year === currentYear;
-  });
+    const expenses = response?.data?.data || [];
+    const now = new Date();
+    const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
+    const currentYear = now.getFullYear();
+    const monthName = now.toLocaleString("default", { month: "long" });
 
-  let income = 0,
-    expense = 0;
-  let rows = monthlyExpenses.map((exp) => {
-    const date = exp.createdAt.slice(0, 10);
-    const isIncome = exp.category === "salary";
-    const amt = +exp.amount;
-    if (isIncome) income += amt;
-    else expense += amt;
+    const monthlyExpenses = expenses.filter((exp) => {
+      const [year, month] = exp.createdAt.slice(0, 10).split("-");
+      return month === currentMonth && +year === currentYear;
+    });
 
-    return `
-      <tr class="table-item">
-        <td>${date}</td>
-        <td>${exp.description}</td>
-        <td>${exp.category}</td>
-        <td>${isIncome ? `Rs ${amt}.00` : "00.00"}</td>
-        <td>${!isIncome ? `Rs ${amt}.00` : "00.00"}</td>
-      </tr>
-    `;
-  });
+    let income = 0,
+      expense = 0;
 
-  let note_rows = expenses.map((exp) => {
-    return exp.note
-      ? `<tr class="table-item">
-      <td>${exp.createdAt.slice(0, 10)}</td>
-      <td>${exp.note}</td>
-      </tr>`
-      : "";
-  });
+    const rows = monthlyExpenses.map((exp) => {
+      const date = exp.createdAt.slice(0, 10);
+      const isIncome = exp.category === "salary";
+      const amt = +exp.amount;
+      if (isIncome) income += amt;
+      else expense += amt;
 
-  const saving = income - expense;
+      return `
+          <tr class="table-item">
+            <td>${date}</td>
+            <td>${exp.description}</td>
+            <td>${exp.category}</td>
+            <td>${isIncome ? `Rs ${amt}.00` : "00.00"}</td>
+            <td>${!isIncome ? `Rs ${amt}.00` : "00.00"}</td>
+          </tr>
+        `;
+    });
 
-  const downloadtable = await axios.get(`${api}/expenses/downloadtable`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    const note_rows = expenses.map((exp) => {
+      return exp.note
+        ? `<tr class="table-item">
+            <td>${exp.createdAt.slice(0, 10)}</td>
+            <td>${exp.note}</td>
+          </tr>`
+        : "";
+    });
 
-  console.log(downloadtable);
+    const saving = income - expense;
 
-  const fileRows = downloadtable.data.data.length
-    ? downloadtable.data.data
-        .map(
-          (item) => `
-        <tr>
-          <td>${item.createdAt.slice(0, 10)}</td>
-          <td><a href="${item.fileUrl}" target="_blank">${item.fileUrl}</a></td>
-        </tr>
-      `
-        )
-        .join("")
-    : "<tr><td colspan='2'>No files downloaded yet.</td></tr>";
+    let fileRows = "";
+    try {
+      const downloadtable = await axios.get(
+        "http://localhost:3000/expenses/downloadtable",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-  const tableSection = `
-    <h2>${monthName} ${currentYear}</h2>
-    <table>
-    <tr><th>Date</th><th>Description</th><th>Category</th><th>Income</th><th>Expenses</th></tr>
-      ${rows.join("")}
-      <tr><td colspan="3"></td><td><strong>Rs ${income}.00</strong></td><td><strong>Rs ${expense}.00</strong></td></tr>
-      </tr>
-      </table>
-      <table style="width: 80%;">
-      <tr><td style="color: blue; text-align: right;">Total Saving: Rs ${saving}.00</td></tr>
-      </table>
+      fileRows = downloadtable.data.data.length
+        ? downloadtable.data.data
+            .map(
+              (item) => `
+              <tr>
+                <td>${item.createdAt.slice(0, 10)}</td>
+                <td><a href="${item.fileUrl}" target="_blank">${
+                item.fileUrl
+              }</a></td>
+              </tr>
+            `
+            )
+            .join("")
+        : "<tr><td colspan='2'>No files downloaded yet.</td></tr>";
+    } catch (err) {
+      console.error("Error fetching download table:", err);
+      fileRows = "<tr><td colspan='2'>Unable to load download files.</td></tr>";
+    }
+
+    const tableSection = `
+        <h2>${monthName} ${currentYear}</h2>
+        <table>
+          <tr><th>Date</th><th>Description</th><th>Category</th><th>Income</th><th>Expenses</th></tr>
+          ${rows.join("")}
+          <tr><td colspan="3"></td><td><strong>Rs ${income}.00</strong></td><td><strong>Rs ${expense}.00</strong></td></tr>
+        </table>
+        <table style="width: 80%;">
+          <tr><td style="color: blue; text-align: right;">Total Saving: Rs ${saving}.00</td></tr>
+        </table>
       `;
 
-  const yearlyReport = `
-    <h3>Yearly Report</h3>
-    <table>
-      <tr><th>Month</th><th>Income</th><th>Expense</th><th>Saving</th></tr>
-      <tr>
-      <td>${monthName}</td>
-        <td style="color: green">Rs ${income}.00</td>
-        <td style="color: red">Rs ${expense}.00</td>
-        <td style="color: blue">Rs ${saving}.00</td>
-      </tr>
-    </table>
-  `;
+    const yearlyReport = `
+        <h3>Yearly Report</h3>
+        <table>
+          <tr><th>Month</th><th>Income</th><th>Expense</th><th>Saving</th></tr>
+          <tr>
+            <td>${monthName}</td>
+            <td style="color: green">Rs ${income}.00</td>
+            <td style="color: red">Rs ${expense}.00</td>
+            <td style="color: blue">Rs ${saving}.00</td>
+          </tr>
+        </table>
+      `;
 
-  const notesReport = `
-    <h3>Notes Report ${currentYear}</h3>
-    <table>
-      <tr><th>Date</th><th>Notes</th></tr>
-      ${note_rows.join("")}
-    </table>
-  `;
+    const notesReport = `
+        <h3>Notes Report ${currentYear}</h3>
+        <table>
+          <tr><th>Date</th><th>Notes</th></tr>
+          ${note_rows.join("")}
+        </table>
+      `;
 
-  const fileTable = `
-    <h3>Download Files</h3>
-    <table>
-      <tr><th>Date</th><th>File URL</th></tr>
-      ${fileRows}
-    </table>
-  `;
+    const fileTable = `
+        <h3>Download Files</h3>
+        <table>
+          <tr><th>Date</th><th>File URL</th></tr>
+          ${fileRows}
+        </table>
+      `;
 
-  listboard.innerHTML = tableSection + yearlyReport + notesReport + fileTable;
+    listboard.innerHTML = tableSection + yearlyReport + notesReport + fileTable;
+  } catch (error) {
+    console.error("Error fetching expenses:", error);
+    if (error.request.status === 404) {
+      listboard.innerHTML = `
+          <p style="color: red; text-align: center">Cannot show expense table. Please try again after adding expenses.</p>
+        `;
+    } else {
+      listboard.innerHTML = `
+          <p style="color: red; text-align: center">Some error occured. Please try again later.</p>
+        `;
+    }
+  }
 }
 
 async function getExpenses(page) {
